@@ -96,7 +96,7 @@ public class SkeletonScript extends LoopingScript {
     @Override
     public void onLoop() {
         //Loops every 100ms by default, to change:
-        //this.loopDelay = 500;
+        this.loopDelay = 3000;
         LocalPlayer player = Client.getLocalPlayer();
         if (player == null || Client.getGameState() != Client.GameState.LOGGED_IN || botState == BotState.IDLE) {
             //wait some time so we dont immediately start on login.
@@ -132,13 +132,15 @@ public class SkeletonScript extends LoopingScript {
         SceneObject Rift = SceneObjectQuery.newQuery().name("Energy Rift").results().first();
         if (Rift != null) {
             Rift.interact("Convert memories");
-            Execution.delayUntil(5000, () -> !containsMemoryItems());
+            Execution.delayUntil(3000, () -> !containsMemoryItems());
         }
         if (containsMemoryItems() == true) {
-            botState = BotState.SKILLING;
+            botState = BotState.DEPOSIT;
+            println("Backpack is still full");
         }
         else {
-            botState = BotState.DEPOSIT;
+            botState = BotState.SKILLING;
+            println("Backpack is empty");
         }
         return random.nextLong(1000, 1500);
     }
