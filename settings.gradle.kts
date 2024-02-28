@@ -1,2 +1,2 @@
-rootProject.name = "LazyRuneSpan"
+rootProject.name = "LazyDivination"
 

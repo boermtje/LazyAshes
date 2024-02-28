@@ -21,6 +21,7 @@ public class SkeletonScriptGraphicsContext extends ScriptGraphicsContext {
                 if (ImGui.BeginTabItem("Settings", ImGuiWindowFlag.None.getValue())) {
                     ImGui.Text("Welcome to my script!");
                     ImGui.Text("My scripts state is: " + script.getBotState());
+                    ImGui.Combo("Bush Type", script.HarvestType(), script.HarvestType().length);
                     if (ImGui.Button("Start")) {
                         //button has been clicked
                         script.setBotState(SkeletonScript.BotState.SKILLING);
@@ -33,7 +34,7 @@ public class SkeletonScriptGraphicsContext extends ScriptGraphicsContext {
                     ImGui.EndTabItem();
                 }
                 if (ImGui.BeginTabItem("Instructions", ImGuiWindowFlag.None.getValue())) {
-                    ImGui.Text("Go to which Runespan island you want to farm on.");
+                    ImGui.Text("Go to which spot you want to train at");
                     ImGui.Text("Start the bot and let it do the rest");
                     ImGui.EndTabItem();
                 }

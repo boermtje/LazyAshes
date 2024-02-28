@@ -24,11 +24,10 @@ import java.util.stream.Collectors;
 public class SkeletonScript extends LoopingScript {
 
     private BotState botState = BotState.IDLE;
+    private boolean someBool = true;
     private Random random = new Random();
-    private HashMap<String, Integer> priorityObjects;
-    private HashMap<String, Integer> priorityNPCs;
-    private HashMap<String, Area> islands;
-    private HashMap<String, Integer> levelRequirements;
+    private HashMap<String, Integer> HarvestType;
+    private HashMap<String, Area> Colonies;
 
     /////////////////////////////////////Botstate//////////////////////////
     enum BotState {
@@ -47,59 +46,46 @@ public class SkeletonScript extends LoopingScript {
     private void initializeMaps() {
         // Initialization logic for priorityObjects, islands, levelRequirements
         // HashMap for priority objects with their level requirements
-        priorityObjects = new HashMap<>();
-        priorityObjects.put("Undead Soul", 95);
-        priorityObjects.put("Living soul", 90);
-        priorityObjects.put("Bloody skulls", 83);
-        priorityObjects.put("Blood pool", 77);
-        priorityObjects.put("Skulls", 65);
-        priorityObjects.put("Jumper", 54);
-        priorityObjects.put("Shifter", 44);
-        priorityObjects.put("Nebula", 40);
-        priorityObjects.put("Chaotic cloud", 35);
-        priorityObjects.put("Fire storm", 27);
-        priorityObjects.put("Fleshy growth", 20);
-        priorityObjects.put("Vine", 17);
-        priorityObjects.put("Fireball", 14);
-        priorityObjects.put("Rock fragment", 9);
-        priorityObjects.put("Water pool", 5);
-        priorityObjects.put("Mind storm", 1);
-        priorityObjects.put("Cyclone", 1);
+        HarvestType = new HashMap<>();
+        HarvestType.put("Incandescent", 95);
+        HarvestType.put("Luminous", 90);
+        HarvestType.put("Radiant", 85);
+        HarvestType.put("Brilliant", 80);
+        HarvestType.put("Elder", 75);
+        HarvestType.put("Lustrous", 70);
+        HarvestType.put("Vibrant", 60);
+        HarvestType.put("Gleaming", 50);
+        HarvestType.put("Sparkling", 40);
+        HarvestType.put("Glowing", 30);
+        HarvestType.put("Bright", 20);
+        HarvestType.put("Flickering", 10);
+        HarvestType.put("Pale", 1);
 
-        priorityNPCs = new HashMap<>();
-        priorityNPCs.put("Earth essling", 9);
-        priorityNPCs.put("Fire essling", 14);
-        priorityNPCs.put("Body essling", 20);
-        priorityNPCs.put("Cosmic esshound", 27);
-        priorityNPCs.put("Chaos esshound", 35);
-        priorityNPCs.put("Astral esshound", 40);
-        priorityNPCs.put("Nature esshound", 44);
-        priorityNPCs.put("Law esshound", 54);
-        priorityNPCs.put("Death esswraith", 65);
-        priorityNPCs.put("Blood esshound", 77);
-        priorityNPCs.put("Soul esshound", 90);
-
-        islands = new HashMap<>();
-        Area.Rectangular Island_1 = new Area.Rectangular(new Coordinate(3989, 6095, 1), new Coordinate(4007, 6119, 1));
-        islands.put("Island_Low_1", Island_1);
-        Area.Rectangular Island_16 = new Area.Rectangular(new Coordinate(3990, 6067, 1), new Coordinate(4014, 6041, 1));
-        islands.put("Island_Low_16", Island_16);
-        Area.Rectangular Island_5 = new Area.Rectangular(new Coordinate(4125, 6093, 1), new Coordinate(4146, 6068, 1));
-        islands.put("Island_Mid__5", Island_5);
-        Area.Rectangular Island_23 = new Area.Rectangular(new Coordinate(4191, 6108, 1), new Coordinate(4204, 6085, 1));
-        islands.put("Island_Mid_23", Island_23);
-        Area.Rectangular Island_13 = new Area.Rectangular(new Coordinate(4325, 6055, 1), new Coordinate(4365, 6037, 1));
-        islands.put("Island_High_13", Island_13);
-        Area.Rectangular Island_29 = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
-        islands.put("Island_High_29", Island_29);
-
-        levelRequirements = new HashMap<>();
-        levelRequirements.put("Island_Low_1", 1);
-        levelRequirements.put("Island_Low_16", 9);
-        levelRequirements.put("Island_Mid__5", 33);
-        levelRequirements.put("Island_Mid_23", 50);
-        levelRequirements.put("Island_High_13", 66);
-        levelRequirements.put("Island_High_29", 90);
+        Colonies = new HashMap<>();
+        Area.Rectangular Pale = new Area.Rectangular(new Coordinate(3989, 6095, 1), new Coordinate(4007, 6119, 1));
+        Colonies.put("Pale", Pale);
+        Area.Rectangular Flickering = new Area.Rectangular(new Coordinate(3990, 6067, 1), new Coordinate(4014, 6041, 1));
+        Colonies.put("Flickering", Flickering);
+        Area.Rectangular Bright = new Area.Rectangular(new Coordinate(4125, 6093, 1), new Coordinate(4146, 6068, 1));
+        Colonies.put("Bright", Bright);
+        Area.Rectangular Sparkling = new Area.Rectangular(new Coordinate(4191, 6108, 1), new Coordinate(4204, 6085, 1));
+        Colonies.put("Sparkling", Sparkling);
+        Area.Rectangular Gleaming = new Area.Rectangular(new Coordinate(4325, 6055, 1), new Coordinate(4365, 6037, 1));
+        Colonies.put("Gleaming", Gleaming);
+        Area.Rectangular Vibrant = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
+        Colonies.put("Vibrant", Vibrant);
+        Area.Rectangular Lustrous = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
+        Colonies.put("Lustrous", Lustrous);
+        Area.Rectangular Elder = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
+        Colonies.put("Elder", Elder);
+        Area.Rectangular Brilliant = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
+        Colonies.put("Brilliant", Brilliant);
+        Area.Rectangular Radiant = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
+        Colonies.put("Radiant", Radiant);
+        Area.Rectangular Luminous = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
+        Colonies.put("Luminous", Luminous);
+        Area.Rectangular Incandescent = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
+        Colonies.put("Incandescent", Incandescent);
     }
 
     @Override
@@ -115,115 +101,51 @@ public class SkeletonScript extends LoopingScript {
 
         /////////////////////////////////////Botstate//////////////////////////
         switch (botState) {
-            case IDLE ->                {println("We're idle!");
-                Execution.delay(random.nextLong(1000,3000));}
-        }
-        interactWithPriorityObjects(player);
-    }
-
-    private boolean hasRune_Essence() {
-        ResultSet<Item> runeScan = InventoryItemQuery.newQuery(93).ids(24227).results();
-        Item rune = runeScan.first();
-        if (rune != null) {
-            return true;
-        }
-        return false;
-    }
-
-    private void tryInteractWithNearestObject(Area currentIsland, List<String> eligibleObjects, LocalPlayer player) {
-        println("Attempting to interact with objects in " + currentIsland);
-
-        if (!hasRune_Essence()) {
-            println("No Rune Essence, going to collect");
-            Npc Floating_Essence = NpcQuery.newQuery().name("Floating essence").results().nearest();
-            if (Floating_Essence != null) {
-                println("found");
-                Floating_Essence.interact("Collect");
-                println("Collecting Essence");
-                Execution.delay(RandomGenerator.nextInt(1000, 2000));
-                if (!hasRune_Essence()){
-                    return;
-                }
+            case IDLE -> {
+                println("We're idle!");
+                Execution.delay(random.nextLong(1000, 3000));
+            }
+            case SKILLING -> {
+                //do some code that handles your skilling
+                Execution.delay(handleSkilling(player));
             }
         }
-
-        // First, check if the player is already interacting (animation ID 16596)
-        if (player.getAnimationId() == 16596) {
-            println("Player is already interacting with an object.");
-            return;
-        }
-
-        // Iterate through eligible objects in decreasing order of priority
-        for (String objectName : eligibleObjects) {
-            println("Looking for: " + objectName);
-            try {
-                EntityResultSet<SceneObject> priorityObjectResultSet = SceneObjectQuery.newQuery()
-                        .name(objectName)
-                        .inside(currentIsland)
-                        .results();
-
-                SceneObject nearestObject = priorityObjectResultSet.nearestTo(player.getCoordinate());
-                if (nearestObject != null) {
-                    println("Found and interacting with: " + nearestObject.getName());
-                    if (nearestObject.interact("Siphon")) {
-                        Execution.delay(RandomGenerator.nextInt(5000, 10000)); // Wait for the interaction to complete
-                        return; // Exit the method after successful interaction
-                    }
-                } else {
-                    println(objectName + " not found in the current island.");
-                }
-            } catch (Exception e) {
-                println("An error occurred while interacting with " + objectName + ": " + e.getMessage());
-            }
-        }
-
-        println("No eligible objects found for interaction in the current island.");
     }
 
-    private void interactWithPriorityObjects(LocalPlayer player) {
-        println("Starting interaction with priority objects");
-        Area currentIsland = determineCurrentIsland(player);
-        println("Determined current island: " + (currentIsland != null ? currentIsland.getArea() : "None"));
-        if (currentIsland != null) {
-            List<String> eligibleObjects = getEligibleObjects(player);
-            println("Eligible objects determined: " + eligibleObjects);
-            tryInteractWithNearestObject(currentIsland, eligibleObjects, player);
-        } else {
-            println("Player is not on any known island.");
+    private long handleSkilling(LocalPlayer player) {
+        Area currentColony = determineCurrentColony(player);
+        if (currentColony == null) {
+            return 1000;
         }
+        println("We are on island: " + currentColony.getArea());
+        int currentLevel = Skills.DIVINATION.getLevel();
+        String currentHarvestType = HarvestType.entrySet().stream().filter(entry -> entry.getValue() <= currentLevel).map(Map.Entry::getKey).collect(Collectors.toList()).get(0);
+        println("We are harvesting: " + currentHarvestType);
+        SceneObject rift = SceneObjectQuery.newQuery().name("Rift").inside(currentColony).results();
+        if (rift == null) {
+            println("Rift not found");
+            return 1000;
+        }
+        if (rift.interact("Harvest")) {
+            Execution.delayUntil(() -> {
+                Npc wisps = NpcQuery.newQuery().name("Wisp").inside(currentColony).results();
+                return wisps != null;
+            }, 5000);
+        }
+        return 1000;
+
     }
 
-    private Area determineCurrentIsland(LocalPlayer player) {
-        for (Map.Entry<String, Area> entry : islands.entrySet()) {
+    private Area determineCurrentColony(LocalPlayer player) {
+        for (Map.Entry<String, Area> entry : Colonies.entrySet()) {
             println("Checking island: " + entry.getKey());
             if (entry.getValue().contains(player.getCoordinate())) {
-                println("Player is on island: " + entry.getKey());
+                println("Player is at Colony: " + entry.getKey());
                 return entry.getValue();
             }
         }
         println("Player is not on any known island");
         return null;
-    }
-
-    private List<String> getEligibleObjects(LocalPlayer player) {
-        int playerLevel = Skills.RUNECRAFTING.getLevel();
-        List<String> eligibleObjects = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : priorityObjects.entrySet()) {
-            println("Checking if player level " + playerLevel + " is >= " + entry.getValue() + " for " + entry.getKey());
-            if (playerLevel >= entry.getValue()) {
-                eligibleObjects.add(entry.getKey());
-            }
-        }
-
-        return priorityObjects.entrySet().stream()
-                // Filter to include only those objects for which player level is sufficient
-                .filter(entry -> playerLevel >= entry.getValue())
-                // Sort in reverse order by level requirement (highest first)
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                // Map each entry to its key (object name)
-                .map(Map.Entry::getKey)
-                // Collect the results into a list
-                .collect(Collectors.toList());
     }
 
     /////////////////STATISTICS////////////////////
@@ -242,7 +164,7 @@ public class SkeletonScript extends LoopingScript {
         levelsGained = 0;
 
         subscribe(SkillUpdateEvent.class, skillUpdateEvent -> {
-            if (skillUpdateEvent.getId() == Skills.RUNECRAFTING.getId()) {
+            if (skillUpdateEvent.getId() == Skills.DIVINATION.getId()) {
                 xpGained += (skillUpdateEvent.getExperience() - skillUpdateEvent.getOldExperience());
                 if (skillUpdateEvent.getOldActualLevel() < skillUpdateEvent.getActualLevel()) {
                     levelsGained++;
@@ -267,7 +189,7 @@ public class SkeletonScript extends LoopingScript {
 
     public String ttl() {
         if (xpPerHour > 0) {
-            int xpToNextLevel = Skills.RUNECRAFTING.getExperienceToNextLevel();
+            int xpToNextLevel = Skills.DIVINATION.getExperienceToNextLevel();
             int totalSeconds = (int) (xpToNextLevel * 3600.0 / xpPerHour);
             int hours = totalSeconds / 3600;
             int minutes = (totalSeconds % 3600) / 60;
@@ -301,4 +223,11 @@ public class SkeletonScript extends LoopingScript {
         this.botState = botState;
     }
 
+    public boolean isSomeBool() {
+        return someBool;
+    }
+
+    public void setSomeBool(boolean someBool) {
+        this.someBool = someBool;
+    }
 }
