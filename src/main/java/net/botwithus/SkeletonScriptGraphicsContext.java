@@ -45,7 +45,7 @@ public class SkeletonScriptGraphicsContext extends ScriptGraphicsContext {
                 }
                 if (ImGui.BeginTabItem("Instructions", ImGuiWindowFlag.None.getValue())) {
                     ImGui.Text("Go to which spot you want to train at");
-                    ImGui.Text("Start the bot and let it do the rest");
+                    ImGui.Text("Select memory type and click start");
                     ImGui.EndTabItem();
                 }
 

@@ -31,9 +31,7 @@ public class SkeletonScript extends LoopingScript {
     private WispType wispState = WispType.Pale;
     private boolean someBool = true;
     private Random random = new Random();
-    public HashMap<String, Integer> HarvestType;
     public HashMap<String, Area> Colonies;
-    public int selectedWispIndex = 0;
 
     /////////////////////////////////////Botstate//////////////////////////
     enum BotState {
@@ -103,6 +101,16 @@ public class SkeletonScript extends LoopingScript {
             return;
         }
 
+        if (Backpack.isFull()) {
+            println("Backpack is full");
+            SceneObject rift = SceneObjectQuery.newQuery().name("Energy rift").results().first();
+            if (rift != null) {
+                rift.interact("Convert memories");
+                Execution.delayUntil(5000, () -> !Backpack.contains("memory"));
+                println("Memories converted " + !Backpack.contains("memory"));
+            }
+        }
+
         /////////////////////////////////////Botstate//////////////////////////
         switch (botState) {
             case IDLE -> {
@@ -114,25 +122,6 @@ public class SkeletonScript extends LoopingScript {
                 Execution.delay(handleSkilling(player, wispState.name()));
             }
         }
-
-        if (Backpack.isFull()) {
-            println("Backpack is full");
-            SceneObject rift = SceneObjectQuery.newQuery().name("Energy rift").results().first();
-            if (rift != null) {
-                rift.interact("Convert memories");
-                Execution.delayUntil(5000, () -> !Backpack.contains("memory")); // Wait up to 10 seconds for the condition to be met
-            }
-            if (Backpack.isEmpty() || !hasMemoryItems()) {
-                println("Backpack is no longer full or no more 'memory' items");
-            }
-        }
-    }
-
-    public boolean hasMemoryItems() {
-        ResultSet<Item> itemsWithMemory = InventoryItemQuery.newQuery(93)
-                .name("memory", String::contains)
-                .results();
-        return !itemsWithMemory.isEmpty();
     }
 
     private long handleSkilling(LocalPlayer player, String WispType) {
