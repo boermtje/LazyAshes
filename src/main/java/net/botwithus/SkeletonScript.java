@@ -127,16 +127,30 @@ public class SkeletonScript extends LoopingScript {
         SceneObject rift = SceneObjectQuery.newQuery().name("Energy rift").results().first();
         if (rift != null) {
             rift.interact("Convert memories");
-            Pattern memoryPattern = Regex.getPatternForContainsString(" memory");
-            Execution.delayUntil(5000, () -> !Backpack.contains(memoryPattern));
-            println("Memories converted " + !Backpack.contains(memoryPattern));
+            Execution.delayUntil(5000, () -> !containsMemoryItems());
+        }
+        SceneObject Rift = SceneObjectQuery.newQuery().name("Energy Rift").results().first();
+        if (Rift != null) {
+            Rift.interact("Convert memories");
+            Execution.delayUntil(5000, () -> !containsMemoryItems());
+        }
+        if (containsMemoryItems() == true) {
             botState = BotState.SKILLING;
         }
         else {
-            println("Rift is null");
-            return random.nextLong(1000, 1500);
+            botState = BotState.DEPOSIT;
         }
         return random.nextLong(1000, 1500);
+    }
+
+    private boolean containsMemoryItems() {
+        Pattern memoryPattern = Regex.getPatternForContainsString(" memory");
+        for (Item item : Backpack.getItems()) {
+            if (memoryPattern.matcher(item.getName()).find()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private long handleSkilling(LocalPlayer player, String WispType) {
