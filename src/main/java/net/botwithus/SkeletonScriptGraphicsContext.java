@@ -19,7 +19,7 @@ public class SkeletonScriptGraphicsContext extends ScriptGraphicsContext {
 
     @Override
     public void drawSettings() {
-        if (ImGui.Begin("LazyRuneSpan", ImGuiWindowFlag.None.getValue())) {
+        if (ImGui.Begin("LazyDivination", ImGuiWindowFlag.None.getValue())) {
             if (ImGui.BeginTabBar("My bar", ImGuiWindowFlag.None.getValue())) {
                 if (ImGui.BeginTabItem("Settings", ImGuiWindowFlag.None.getValue())) {
                     ImGui.Text("My scripts state is: " + script.getBotState());

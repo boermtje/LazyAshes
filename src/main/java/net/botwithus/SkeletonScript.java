@@ -20,9 +20,11 @@ import net.botwithus.rs3.events.impl.SkillUpdateEvent;
 import net.botwithus.rs3.game.skills.Skills;
 import net.botwithus.rs3.game.*;
 import net.botwithus.rs3.util.RandomGenerator;
+import net.botwithus.rs3.util.Regex;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SkeletonScript extends LoopingScript {
@@ -38,6 +40,7 @@ public class SkeletonScript extends LoopingScript {
         //define your own states here
         IDLE,
         SKILLING,
+        DEPOSIT,
         //...
     }
 
@@ -101,16 +104,6 @@ public class SkeletonScript extends LoopingScript {
             return;
         }
 
-        if (Backpack.isFull()) {
-            println("Backpack is full");
-            SceneObject rift = SceneObjectQuery.newQuery().name("Energy rift").results().first();
-            if (rift != null) {
-                rift.interact("Convert memories");
-                Execution.delayUntil(5000, () -> !Backpack.contains("memory"));
-                println("Memories converted " + !Backpack.contains("memory"));
-            }
-        }
-
         /////////////////////////////////////Botstate//////////////////////////
         switch (botState) {
             case IDLE -> {
@@ -121,11 +114,36 @@ public class SkeletonScript extends LoopingScript {
                 //do some code that handles your skilling
                 Execution.delay(handleSkilling(player, wispState.name()));
             }
+            case DEPOSIT -> {
+                    //do some code that handles your skilling
+                    Execution.delay(deposit());
+            }
         }
     }
 
+    private long deposit() {
+        println("Backpack is full");
+        Execution.delay(random.nextLong(1000, 2000));
+        SceneObject rift = SceneObjectQuery.newQuery().name("Energy rift").results().first();
+        if (rift != null) {
+            rift.interact("Convert memories");
+            Pattern memoryPattern = Regex.getPatternForContainsString(" memory");
+            Execution.delayUntil(5000, () -> !Backpack.contains(memoryPattern));
+            println("Memories converted " + !Backpack.contains(memoryPattern));
+            botState = BotState.SKILLING;
+        }
+        else {
+            println("Rift is null");
+            return random.nextLong(1000, 1500);
+        }
+        return random.nextLong(1000, 1500);
+    }
+
     private long handleSkilling(LocalPlayer player, String WispType) {
-            if (player.getAnimationId() == -1) {
+            if (Backpack.isFull()) {
+                botState = BotState.DEPOSIT;
+            }
+            else if (player.getAnimationId() == -1) {
                 println("Player is not harvesting");
                 println("Harvesting " + WispType + " wisp");
                 Npc wisp = NpcQuery.newQuery().name(WispType + " wisp").results().nearest();
@@ -133,6 +151,7 @@ public class SkeletonScript extends LoopingScript {
                     println("Wisp found!");
                     wisp.interact("Harvest");
                     Execution.delay(random.nextLong(3000, 7000));
+                    return random.nextLong(1000, 1500);
                 }
                 else {
                     println("Wisp is null");
