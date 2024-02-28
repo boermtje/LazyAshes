@@ -2,8 +2,11 @@ package net.botwithus;
 
 import net.botwithus.rs3.imgui.ImGui;
 import net.botwithus.rs3.imgui.ImGuiWindowFlag;
+import net.botwithus.rs3.imgui.NativeInteger;
 import net.botwithus.rs3.script.ScriptConsole;
 import net.botwithus.rs3.script.ScriptGraphicsContext;
+
+import java.util.Arrays;
 
 public class SkeletonScriptGraphicsContext extends ScriptGraphicsContext {
 
@@ -19,9 +22,16 @@ public class SkeletonScriptGraphicsContext extends ScriptGraphicsContext {
         if (ImGui.Begin("LazyRuneSpan", ImGuiWindowFlag.None.getValue())) {
             if (ImGui.BeginTabBar("My bar", ImGuiWindowFlag.None.getValue())) {
                 if (ImGui.BeginTabItem("Settings", ImGuiWindowFlag.None.getValue())) {
-                    ImGui.Text("Welcome to my script!");
                     ImGui.Text("My scripts state is: " + script.getBotState());
-                    ImGui.Combo("Bush Type", script.HarvestType(), script.HarvestType().length);
+                    ImGui.Text("We are harvesting: " + script.getwispState());
+                    // Wisp type selection combo box
+                    String[] wispTypes = Arrays.stream(SkeletonScript.WispType.values())
+                            .map(Enum::name)
+                            .toArray(String[]::new);
+                    NativeInteger selectedWisp = new NativeInteger(script.getwispState().ordinal());
+                    if (ImGui.Combo("Wisp Type", selectedWisp, wispTypes)) {
+                        script.setWispType(SkeletonScript.WispType.values()[selectedWisp.get()]);
+                    }
                     if (ImGui.Button("Start")) {
                         //button has been clicked
                         script.setBotState(SkeletonScript.BotState.SKILLING);
@@ -55,7 +65,5 @@ public class SkeletonScriptGraphicsContext extends ScriptGraphicsContext {
     }
 
     @Override
-    public void drawOverlay() {
-        super.drawOverlay();
-    }
+    public void drawOverlay() { super.drawOverlay(); }
 }

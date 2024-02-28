@@ -1,5 +1,7 @@
 package net.botwithus;
 
+import net.botwithus.api.game.hud.inventories.Backpack;
+import net.botwithus.api.game.hud.inventories.BackpackInventory;
 import net.botwithus.internal.scripts.ScriptDefinition;
 import net.botwithus.rs3.game.Client;
 import net.botwithus.rs3.game.queries.builders.characters.NpcQuery;
@@ -10,6 +12,7 @@ import net.botwithus.rs3.game.queries.results.ResultSet;
 import net.botwithus.rs3.game.scene.entities.characters.npc.Npc;
 import net.botwithus.rs3.game.scene.entities.characters.player.LocalPlayer;
 import net.botwithus.rs3.game.scene.entities.object.SceneObject;
+import net.botwithus.rs3.imgui.NativeInteger;
 import net.botwithus.rs3.script.Execution;
 import net.botwithus.rs3.script.LoopingScript;
 import net.botwithus.rs3.script.config.ScriptConfig;
@@ -19,15 +22,18 @@ import net.botwithus.rs3.game.*;
 import net.botwithus.rs3.util.RandomGenerator;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 public class SkeletonScript extends LoopingScript {
 
     private BotState botState = BotState.IDLE;
+    private WispType wispState = WispType.Pale;
     private boolean someBool = true;
     private Random random = new Random();
-    private HashMap<String, Integer> HarvestType;
-    private HashMap<String, Area> Colonies;
+    public HashMap<String, Integer> HarvestType;
+    public HashMap<String, Area> Colonies;
+    public int selectedWispIndex = 0;
 
     /////////////////////////////////////Botstate//////////////////////////
     enum BotState {
@@ -37,6 +43,21 @@ public class SkeletonScript extends LoopingScript {
         //...
     }
 
+    enum WispType {
+        Pale,
+        Flickering,
+        Bright,
+        Sparkling,
+        Gleaming,
+        Vibrant,
+        Lustrous,
+        Elder,
+        Brilliant,
+        Radiant,
+        Luminous,
+        Incandescent
+    }
+
     public SkeletonScript(String s, ScriptConfig scriptConfig, ScriptDefinition scriptDefinition) {
         super(s, scriptConfig, scriptDefinition);
         this.sgc = new SkeletonScriptGraphicsContext(getConsole(), this);
@@ -44,23 +65,6 @@ public class SkeletonScript extends LoopingScript {
     }
 
     private void initializeMaps() {
-        // Initialization logic for priorityObjects, islands, levelRequirements
-        // HashMap for priority objects with their level requirements
-        HarvestType = new HashMap<>();
-        HarvestType.put("Incandescent", 95);
-        HarvestType.put("Luminous", 90);
-        HarvestType.put("Radiant", 85);
-        HarvestType.put("Brilliant", 80);
-        HarvestType.put("Elder", 75);
-        HarvestType.put("Lustrous", 70);
-        HarvestType.put("Vibrant", 60);
-        HarvestType.put("Gleaming", 50);
-        HarvestType.put("Sparkling", 40);
-        HarvestType.put("Glowing", 30);
-        HarvestType.put("Bright", 20);
-        HarvestType.put("Flickering", 10);
-        HarvestType.put("Pale", 1);
-
         Colonies = new HashMap<>();
         Area.Rectangular Pale = new Area.Rectangular(new Coordinate(3989, 6095, 1), new Coordinate(4007, 6119, 1));
         Colonies.put("Pale", Pale);
@@ -107,45 +111,50 @@ public class SkeletonScript extends LoopingScript {
             }
             case SKILLING -> {
                 //do some code that handles your skilling
-                Execution.delay(handleSkilling(player));
+                Execution.delay(handleSkilling(player, wispState.name()));
+            }
+        }
+
+        if (Backpack.isFull()) {
+            println("Backpack is full");
+            SceneObject rift = SceneObjectQuery.newQuery().name("Energy rift").results().first();
+            if (rift != null) {
+                rift.interact("Convert memories");
+                Execution.delayUntil(5000, () -> !Backpack.contains("memory")); // Wait up to 10 seconds for the condition to be met
+            }
+            if (Backpack.isEmpty() || !hasMemoryItems()) {
+                println("Backpack is no longer full or no more 'memory' items");
             }
         }
     }
 
-    private long handleSkilling(LocalPlayer player) {
-        Area currentColony = determineCurrentColony(player);
-        if (currentColony == null) {
-            return 1000;
-        }
-        println("We are on island: " + currentColony.getArea());
-        int currentLevel = Skills.DIVINATION.getLevel();
-        String currentHarvestType = HarvestType.entrySet().stream().filter(entry -> entry.getValue() <= currentLevel).map(Map.Entry::getKey).collect(Collectors.toList()).get(0);
-        println("We are harvesting: " + currentHarvestType);
-        SceneObject rift = SceneObjectQuery.newQuery().name("Rift").inside(currentColony).results();
-        if (rift == null) {
-            println("Rift not found");
-            return 1000;
-        }
-        if (rift.interact("Harvest")) {
-            Execution.delayUntil(() -> {
-                Npc wisps = NpcQuery.newQuery().name("Wisp").inside(currentColony).results();
-                return wisps != null;
-            }, 5000);
-        }
+    public boolean hasMemoryItems() {
+        ResultSet<Item> itemsWithMemory = InventoryItemQuery.newQuery(93)
+                .name("memory", String::contains)
+                .results();
+        return !itemsWithMemory.isEmpty();
+    }
+
+    private long handleSkilling(LocalPlayer player, String WispType) {
+            if (player.getAnimationId() == -1) {
+                println("Player is not harvesting");
+                println("Harvesting " + WispType + " wisp");
+                Npc wisp = NpcQuery.newQuery().name(WispType + " wisp").results().nearest();
+                if (wisp != null) {
+                    println("Wisp found!");
+                    wisp.interact("Harvest");
+                    Execution.delay(random.nextLong(3000, 7000));
+                }
+                else {
+                    println("Wisp is null");
+                    return 1000;
+                }
+            }
+            else {
+                println("Player is already busy");
+                Execution.delay(random.nextLong(3000, 7000));
+            }
         return 1000;
-
-    }
-
-    private Area determineCurrentColony(LocalPlayer player) {
-        for (Map.Entry<String, Area> entry : Colonies.entrySet()) {
-            println("Checking island: " + entry.getKey());
-            if (entry.getValue().contains(player.getCoordinate())) {
-                println("Player is at Colony: " + entry.getKey());
-                return entry.getValue();
-            }
-        }
-        println("Player is not on any known island");
-        return null;
     }
 
     /////////////////STATISTICS////////////////////
@@ -221,6 +230,14 @@ public class SkeletonScript extends LoopingScript {
 
     public void setBotState(BotState botState) {
         this.botState = botState;
+    }
+
+    public WispType getwispState() {
+        return wispState;
+    }
+
+    public void setWispType(WispType wispType) {
+        this.wispState = wispType;
     }
 
     public boolean isSomeBool() {
