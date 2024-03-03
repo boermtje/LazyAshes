@@ -1,62 +1,39 @@
 package net.botwithus;
 
-import net.botwithus.api.game.hud.inventories.Backpack;
-import net.botwithus.api.game.hud.inventories.BackpackInventory;
 import net.botwithus.internal.scripts.ScriptDefinition;
 import net.botwithus.rs3.game.Client;
-import net.botwithus.rs3.game.queries.builders.characters.NpcQuery;
-import net.botwithus.rs3.game.queries.builders.items.InventoryItemQuery;
+import net.botwithus.rs3.game.actionbar.ActionBar;
+import net.botwithus.rs3.game.hud.interfaces.Component;
+import net.botwithus.rs3.game.hud.interfaces.Interfaces;
+import net.botwithus.rs3.game.queries.builders.components.ComponentQuery;
 import net.botwithus.rs3.game.queries.builders.objects.SceneObjectQuery;
-import net.botwithus.rs3.game.queries.results.EntityResultSet;
-import net.botwithus.rs3.game.queries.results.ResultSet;
-import net.botwithus.rs3.game.scene.entities.characters.npc.Npc;
 import net.botwithus.rs3.game.scene.entities.characters.player.LocalPlayer;
 import net.botwithus.rs3.game.scene.entities.object.SceneObject;
-import net.botwithus.rs3.imgui.NativeInteger;
 import net.botwithus.rs3.script.Execution;
 import net.botwithus.rs3.script.LoopingScript;
 import net.botwithus.rs3.script.config.ScriptConfig;
 import net.botwithus.rs3.events.impl.SkillUpdateEvent;
 import net.botwithus.rs3.game.skills.Skills;
 import net.botwithus.rs3.game.*;
-import net.botwithus.rs3.util.RandomGenerator;
-import net.botwithus.rs3.util.Regex;
+
 
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class SkeletonScript extends LoopingScript {
 
     private BotState botState = BotState.IDLE;
-    private WispType wispState = WispType.Pale;
     private boolean someBool = true;
     private Random random = new Random();
-    public HashMap<String, Area> Colonies;
+    public HashMap<String, Area> GlowingFungus;
+    public int fungusPickCount = 0;
+    private int whenfungusDrop = 0;
 
     /////////////////////////////////////Botstate//////////////////////////
     enum BotState {
         //define your own states here
         IDLE,
         SKILLING,
-        DEPOSIT,
         //...
-    }
-
-    enum WispType {
-        Pale,
-        Flickering,
-        Bright,
-        Sparkling,
-        Gleaming,
-        Vibrant,
-        Lustrous,
-        Elder,
-        Brilliant,
-        Radiant,
-        Luminous,
-        Incandescent
     }
 
     public SkeletonScript(String s, ScriptConfig scriptConfig, ScriptDefinition scriptDefinition) {
@@ -66,37 +43,15 @@ public class SkeletonScript extends LoopingScript {
     }
 
     private void initializeMaps() {
-        Colonies = new HashMap<>();
-        Area.Rectangular Pale = new Area.Rectangular(new Coordinate(3989, 6095, 1), new Coordinate(4007, 6119, 1));
-        Colonies.put("Pale", Pale);
-        Area.Rectangular Flickering = new Area.Rectangular(new Coordinate(3990, 6067, 1), new Coordinate(4014, 6041, 1));
-        Colonies.put("Flickering", Flickering);
-        Area.Rectangular Bright = new Area.Rectangular(new Coordinate(4125, 6093, 1), new Coordinate(4146, 6068, 1));
-        Colonies.put("Bright", Bright);
-        Area.Rectangular Sparkling = new Area.Rectangular(new Coordinate(4191, 6108, 1), new Coordinate(4204, 6085, 1));
-        Colonies.put("Sparkling", Sparkling);
-        Area.Rectangular Gleaming = new Area.Rectangular(new Coordinate(4325, 6055, 1), new Coordinate(4365, 6037, 1));
-        Colonies.put("Gleaming", Gleaming);
-        Area.Rectangular Vibrant = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
-        Colonies.put("Vibrant", Vibrant);
-        Area.Rectangular Lustrous = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
-        Colonies.put("Lustrous", Lustrous);
-        Area.Rectangular Elder = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
-        Colonies.put("Elder", Elder);
-        Area.Rectangular Brilliant = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
-        Colonies.put("Brilliant", Brilliant);
-        Area.Rectangular Radiant = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
-        Colonies.put("Radiant", Radiant);
-        Area.Rectangular Luminous = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
-        Colonies.put("Luminous", Luminous);
-        Area.Rectangular Incandescent = new Area.Rectangular(new Coordinate(4371, 6086, 1), new Coordinate(4385, 6070, 1));
-        Colonies.put("Incandescent", Incandescent);
+        GlowingFungus = new HashMap<>();
+        Area.Singular fungus = new Area.Singular(new Coordinate(2782, 4494, 0));
+        GlowingFungus.put("Fungus", fungus);
     }
 
     @Override
     public void onLoop() {
         //Loops every 100ms by default, to change:
-        this.loopDelay = 3000;
+        this.loopDelay = 1000;
         LocalPlayer player = Client.getLocalPlayer();
         if (player == null || Client.getGameState() != Client.GameState.LOGGED_IN || botState == BotState.IDLE) {
             //wait some time so we dont immediately start on login.
@@ -112,73 +67,44 @@ public class SkeletonScript extends LoopingScript {
             }
             case SKILLING -> {
                 //do some code that handles your skilling
-                Execution.delay(handleSkilling(player, wispState.name()));
-            }
-            case DEPOSIT -> {
-                    //do some code that handles your skilling
-                    Execution.delay(deposit());
+                Execution.delay(handleSkilling(player));
             }
         }
     }
 
-    private long deposit() {
-        println("Backpack is full");
-        Execution.delay(random.nextLong(1000, 2000));
-        SceneObject rift = SceneObjectQuery.newQuery().name("Energy rift").results().first();
-        if (rift != null) {
-            rift.interact("Convert memories");
-            Execution.delayUntil(5000, () -> !containsMemoryItems());
-        }
-        SceneObject Rift = SceneObjectQuery.newQuery().name("Energy Rift").results().first();
-        if (Rift != null) {
-            Rift.interact("Convert memories");
-            Execution.delayUntil(3000, () -> !containsMemoryItems());
-        }
-        if (containsMemoryItems() == true) {
-            botState = BotState.DEPOSIT;
-            println("Backpack is still full");
-        }
-        else {
-            botState = BotState.SKILLING;
-            println("Backpack is empty");
-        }
-        return random.nextLong(1000, 1500);
-    }
+    private long handleSkilling(LocalPlayer player) {
+                Coordinate Fungus = new Coordinate(2782, 4494, 0);
+                SceneObject fungus = SceneObjectQuery.newQuery().name("Glowing fungus").results().nearestTo(Fungus);
+                if (fungus != null) {
+                    println("Fungus found!");
+                    fungus.interact("Pick");
+                    ActionBar.useItem("Glowing fungus", "Drop");
+                    fungusPickCount++;
+                    whenfungusDrop++;
 
-    private boolean containsMemoryItems() {
-        Pattern memoryPattern = Regex.getPatternForContainsString(" memory");
-        for (Item item : Backpack.getItems()) {
-            if (memoryPattern.matcher(item.getName()).find()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private long handleSkilling(LocalPlayer player, String WispType) {
-            if (Backpack.isFull()) {
-                botState = BotState.DEPOSIT;
-            }
-            else if (player.getAnimationId() == -1) {
-                println("Player is not harvesting");
-                println("Harvesting " + WispType + " wisp");
-                Npc wisp = NpcQuery.newQuery().name(WispType + " wisp").results().nearest();
-                if (wisp != null) {
-                    println("Wisp found!");
-                    wisp.interact("Harvest");
-                    Execution.delay(random.nextLong(3000, 7000));
-                    return random.nextLong(1000, 1500);
+                    if (whenfungusDrop >= 10) {
+                        looting();
+                        whenfungusDrop = 0; // Reset the counter
+                    }
+                    return random.nextLong(600, 900);
                 }
                 else {
-                    println("Wisp is null");
+                    println("Fungus is null");
                     return 1000;
                 }
+    }
+
+    private void looting() {
+        if (Interfaces.isOpen(1622)) {
+            //do the loot thing
+            Component loot = ComponentQuery.newQuery(1622).componentIndex(22).results().first();
+            if (loot != null) {
+                loot.interact(1);
+                println("Looted all");
+            } else {
+                println("Loot button not found.");
             }
-            else {
-                println("Player is already busy");
-                Execution.delay(random.nextLong(3000, 7000));
-            }
-        return 1000;
+        }
     }
 
     /////////////////STATISTICS////////////////////
@@ -254,14 +180,6 @@ public class SkeletonScript extends LoopingScript {
 
     public void setBotState(BotState botState) {
         this.botState = botState;
-    }
-
-    public WispType getwispState() {
-        return wispState;
-    }
-
-    public void setWispType(WispType wispType) {
-        this.wispState = wispType;
     }
 
     public boolean isSomeBool() {
