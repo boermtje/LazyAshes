@@ -70,17 +70,22 @@ public class SkeletonScript extends LoopingScript {
                 SceneObject fungus = SceneObjectQuery.newQuery().name("Glowing fungus").results().nearestTo(Fungus);
                 if (fungus != null) {
                     println("Fungus found!");
-                    fungus.interact("Pick");
-                    Execution.delay(RandomGenerator.nextInt(50,200));
-                    ActionBar.useItem("Glowing fungus", "Drop");
                     if (fungus.interact("Pick")) {
                         fungusPickCount++;
                         whenfungusDrop++;
 
                         if (whenfungusDrop >= RandomGenerator.nextInt(7,20)) {
+                            Execution.delay(RandomGenerator.nextInt(50, 300));
                             looting();
                             whenfungusDrop = 0; // Reset the counter
                         }
+                    }
+                    Execution.delay(RandomGenerator.nextInt(50,200));
+                    ActionBar.useItem("Glowing fungus", "Drop");
+                    //Random AFK roll
+                    if (RandomGenerator.nextInt(500) == 250) {
+                        println("Going AFK");
+                        return random.nextLong(7000, 25000);
                     }
                     return random.nextLong(600, 900);
                 }
