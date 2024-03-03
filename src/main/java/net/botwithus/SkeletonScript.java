@@ -15,6 +15,7 @@ import net.botwithus.rs3.script.config.ScriptConfig;
 import net.botwithus.rs3.events.impl.SkillUpdateEvent;
 import net.botwithus.rs3.game.skills.Skills;
 import net.botwithus.rs3.game.*;
+import net.botwithus.rs3.util.RandomGenerator;
 
 
 import java.util.*;
@@ -24,7 +25,6 @@ public class SkeletonScript extends LoopingScript {
     private BotState botState = BotState.IDLE;
     private boolean someBool = true;
     private Random random = new Random();
-    public HashMap<String, Area> GlowingFungus;
     public int fungusPickCount = 0;
     private int whenfungusDrop = 0;
 
@@ -39,13 +39,6 @@ public class SkeletonScript extends LoopingScript {
     public SkeletonScript(String s, ScriptConfig scriptConfig, ScriptDefinition scriptDefinition) {
         super(s, scriptConfig, scriptDefinition);
         this.sgc = new SkeletonScriptGraphicsContext(getConsole(), this);
-        initializeMaps(); // Call to initialize maps
-    }
-
-    private void initializeMaps() {
-        GlowingFungus = new HashMap<>();
-        Area.Singular fungus = new Area.Singular(new Coordinate(2782, 4494, 0));
-        GlowingFungus.put("Fungus", fungus);
     }
 
     @Override
@@ -78,13 +71,16 @@ public class SkeletonScript extends LoopingScript {
                 if (fungus != null) {
                     println("Fungus found!");
                     fungus.interact("Pick");
+                    Execution.delay(RandomGenerator.nextInt(50,200));
                     ActionBar.useItem("Glowing fungus", "Drop");
-                    fungusPickCount++;
-                    whenfungusDrop++;
+                    if (fungus.interact("Pick")) {
+                        fungusPickCount++;
+                        whenfungusDrop++;
 
-                    if (whenfungusDrop >= 10) {
-                        looting();
-                        whenfungusDrop = 0; // Reset the counter
+                        if (whenfungusDrop >= RandomGenerator.nextInt(7,20)) {
+                            looting();
+                            whenfungusDrop = 0; // Reset the counter
+                        }
                     }
                     return random.nextLong(600, 900);
                 }
